@@ -34,7 +34,7 @@ netSpec.ip2 = L.InnerProduct(netSpec.data, num_output=10, \
 netSpec.ip2.fn.params['param'] = [{'lr_mult': ip2_lrm_weights, 'decay_mult': 1}, \
                                   {'lr_mult': ip2_lrm_bias, 'decay_mult': 1}]
 
-#netSpec.accuracy = L.Accuracy(netSPec.ip2, netSpec.label, include={phase: 'TEST'})
+netSpec.accuracy = L.Accuracy(netSpec.ip2, netSpec.label, phase=0)
 
 netSpec.loss = L.SoftmaxWithLoss(netSpec.ip2, netSpec.label)
 
