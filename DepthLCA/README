@@ -1,0 +1,7 @@
+A repository on DepthSCANN, a convolutional sparse coding model to encode binoular images.
+
+Directories:
+cluster: Scripts for running PV on aws clusters.
+input: Input files for PV
+scripts: Scripting tools
+src: C++ custom src directory for PV
