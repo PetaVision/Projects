@@ -2,42 +2,41 @@
 net: "mlp.prototxt"
 
 # test_iter specifies how many forward passes the test should carry out.
-# In the case of MNIST, we have a test batch size 100 and 100 test iterations,
+# In the case of CIFAR-10, we have a test batch size 100 and 100 test iterations,
 # covering the full 10,000 testing images.
-#test_iter: 100
-# Carry out testing every 500 training iterations.
-#test_interval: 500
+test_iter: 100
+test_interval: 1000
 
 # Learning parameters for network
-base_lr: 0.01
+base_lr: 0.1
 momentum: 0.9
-weight_decay: 0.0005
+weight_decay: 0.005
 
 # The learning rate policy.
 # Step the LR down by lr * gamma each stepsize time steps.
-lr_policy: "step"
-stepsize: 5000
-gamma: 0.1
+
+#lr_policy: "step"
+#stepsize: 10000
+#gamma: 0.9
 
 #lr_policy: "inv"
 #gamma: 0.0001
 #power: 0.75
 
-#lr_policy: "multistep"
-#gamma: 0.9
-#stepvalue: 5000
-#stepvalue: 7000
-#stepvalue: 8000
-#stepvalue: 9000
-#stepvalue: 9500
+lr_policy: "multistep"
+gamma: 0.1
+stepvalue: 60000
+stepvalue: 65000
+stepvalue: 70000
+stepvalue: 80000
 
-# Train the network for 10000 iterations
-max_iter: 10000
-# Display every 100 iterations
-display: 100
+# CIFAR has 60,000 training images
+max_iter: 300000 # 5 epochs
+# Display frequency
+display: 1000
 # Snapshot intermediate results
-snapshot: 5000
-snapshot_prefix: "checkpoints/mlp_"
+snapshot: 150000
+snapshot_prefix: "checkpoints/mlp_sparse"
 
 # solver mode: CPU or GPU
 solver_mode: CPU

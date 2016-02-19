@@ -12,12 +12,19 @@ sys.path.insert(0, os.path.abspath(os.environ['HOME']+'/Work/Libraries/caffe/pyt
 from pvtools import *
 import caffe
 
-#set up path to pvp file
-pvp_file_path = os.environ['HOME']+'/Work/LANL/Data/S1_400.pvp'
-image_list_path = os.environ['HOME']+'/Work/LANL/Data/mixed_cifar.txt'
-lmdb_file_name = 'pvCifar_train_lmdb'
+import IPython
 
-def pvObj2DenseMat(pvObj):
+pvp_file = os.environ['HOME']+'/Work/LANL/Data/S1_0Perturbation_Train.pvp'
+image_list = os.environ['HOME']+'/Work/LANL/Data/mixed_cifar.txt'
+lmdb_file = 'pvCifar_train_lmdb'      # [str] output destination
+progress_write = 100                  # [int] How often to write out progress (number of frames)
+write_separate_labels = False         # [bool] If True, will write txt file that only contains labels
+num_validation = 10000                # [int] Size of validation dataset, if 0 will not make one
+validation_file = 'pvCifar_val_lmdb'  # [str] Name of pvp validation file if num_validaiton > 0
+
+assert(num_validation >= 0)
+
+def pvObj2DenseMat(pvObj, progress_write):
     numIm = len(pvObj)
     numF = pvObj.header['nf']
     numY = pvObj.header['ny']
@@ -31,7 +38,9 @@ def pvObj2DenseMat(pvObj):
         ij_mat = (np.zeros(numActive), frame_indices)
         out_vec = np.array(sparse.coo_matrix((frame_data, ij_mat), shape=(1, dense_shape)).todense())
         out_mat[frame_idx,:,:,:] = out_vec.reshape((numF, numY, numX))
-    return out_mat
+        if not i%progress_write:
+            print "Converted frame " + str(frame_idx) + " of " + str(numIm)
+    return out_mat.astype('float')
 
 def cifarList2Vec(file_loc,label_pos):
     label_list = []
@@ -41,23 +50,43 @@ def cifarList2Vec(file_loc,label_pos):
             label_list.append(line_arry[label_pos])
     return np.array(label_list)
 
-pvData = readpvpfile(pvp_file_path) # This takes some time...
+def write_lmdb(filename, map_size, progress_write, data, index_list):
+    with lmdb.open(filename, map_size=map_size) as env:
+        with env.begin(write=True) as txn:   # txn is a Transaction object
+            for i in index_list:
+                datum = caffe.proto.caffe_pb2.Datum()
+                datum.channels = data.shape[1]
+                datum.height = data.shape[2]
+                datum.width = data.shape[3]
+                #logActivities = np.copy(data[i])
+                #logActivities[np.nonzero(logActivities)] = np.log(logActivities[np.nonzero(logActivities)])
+                datum = caffe.io.array_to_datum(data[i], int(labels[i]))
+                keystr = '{:04}'.format(i)
+                txn.put(keystr.encode('ascii'), datum.SerializeToString())
+                if not i%progress_write:
+                    print "Wrote frame "+str(i)+" of "+str(index_list[-1])
+
+pvData = readpvpfile(pvp_file, progress_write) # This takes some time...
 pvActivities = pvObj2DenseMat(pvData)
-labels = cifarList2Vec(image_list_path, 6).astype(np.int64)
-assert labels.shape[0] == pvActivities.shape[0]
+labels = cifarList2Vec(image_list, 6).astype(np.int64)
+
+assert(labels.shape[0] == pvActivities.shape[0])
+
+if write_separate_labels:
+    label_out_text = open('labels.txt','w')
+    for label in labels:
+        label_out_text.write(str(label)+'\n')
+    label_out_text.close()
 
 # Database size set to be 10x bigger than needed
 # as suggested in http://deepdish.io/2015/04/28/creating-lmdb-in-python/
-map_size = pvActivities.nbytes * 10
+map_size = pvActivities[0:len(pvData)-num_validation].nbytes * 10
 
-env = lmdb.open(lmdb_file_name, map_size=map_size)
-with env.begin(write=True) as txn:   # txn is a Transaction object
-    for i in range(len(pvData)):
-        datum = caffe.proto.caffe_pb2.Datum()
-        datum.channels = pvActivities.shape[1]
-        datum.height = pvActivities.shape[2]
-        datum.width = pvActivities.shape[3]
-        datum.data = pvActivities[i].tobytes()
-        datum.label = int(labels[i])
-        str_id = '{:08}'.format(i)
-        txn.put(str_id.encode('ascii'), datum.SerializeToString())
+# Create initial set
+write_lmdb(lmdb_file, map_size, progress_write, pvActivities, range(len(pvData) - num_validation))
+
+# Create validation set if required
+if (num_validation > 0):
+    print "-------\nWriting validation set\n-------"
+    map_size = pvActivities[len(pvData)-num_validation:len(pvData)].nbytes * 10
+    write_lmdb(validation_file, map_size, progress_write, pvActivities, range(len(pvData)-num_validation, len(pvData)))
