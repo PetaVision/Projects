@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import scipy.sparse as sparse
 import lmdb
+import argparse
 
 # Add paths
 sys.path.insert(0, os.path.abspath('../../../python/')) # PetaVision
@@ -14,33 +15,17 @@ import caffe
 
 import IPython
 
-pvp_file = os.environ['HOME']+'/Work/LANL/Data/S1_0Perturbation_Train.pvp'
-image_list = os.environ['HOME']+'/Work/LANL/Data/mixed_cifar.txt'
-lmdb_file = 'pvCifar_train_lmdb'      # [str] output destination
-progress_write = 100                  # [int] How often to write out progress (number of frames)
-write_separate_labels = False         # [bool] If True, will write txt file that only contains labels
-num_validation = 10000                # [int] Size of validation dataset, if 0 will not make one
-validation_file = 'pvCifar_val_lmdb'  # [str] Name of pvp validation file if num_validaiton > 0
+parser = argparse.ArgumentParser(description="Create an LMDB file from an input pvp file.",
+                                 usage="create_lmdb_from_pvp.py -p <pvp_file> -i <img_list_txt_file> -o <output_file>")
 
-assert(num_validation >= 0)
-
-def pvObj2DenseMat(pvObj, progress_write):
-    numIm = len(pvObj)
-    numF = pvObj.header['nf']
-    numY = pvObj.header['ny']
-    numX = pvObj.header['nx']
-    dense_shape = numF * numY * numX
-    out_mat = np.zeros((numIm, numF, numY, numX))
-    for frame_idx in range(numIm):
-        frame_indices = np.array(pvObj[frame_idx].values)[:,0].astype(np.int32)
-        frame_data = np.array(pvObj[frame_idx].values)[:,1].astype(np.float32)
-        numActive = len(frame_indices)
-        ij_mat = (np.zeros(numActive), frame_indices)
-        out_vec = np.array(sparse.coo_matrix((frame_data, ij_mat), shape=(1, dense_shape)).todense())
-        out_mat[frame_idx,:,:,:] = out_vec.reshape((numF, numY, numX))
-        if not i%progress_write:
-            print "Converted frame " + str(frame_idx) + " of " + str(numIm)
-    return out_mat.astype('float')
+parser.add_argument("-p", "--pvp-file", type=str, required=True, help="input PVP file")
+parser.add_argument("-i", "--image-list", type=str, required=True, help="text list of image files")
+parser.add_argument("-o", "--output-file", type=str, required=True, help="output file name")
+parser.add_argument("-s", "--image-label-pos", type=int, default=6, required=False, help="location of image label in image_list file")
+parser.add_argument("-w", "--write-progress", type=int, default=0, required=False, help="interval to write out progress")
+parser.add_argument("-l", "--label-output", action="store_true", required=False, help="set flag to create label text file")
+parser.add_argument("-v", "--validation-num", type=int, default=0, required=False, help="number of images to use for validation set (0 is training only)")
+parser.add_argument("-a", "--validation-file", type=str, default="./validation_lmdb", required=False, help="validation set filename")
 
 def cifarList2Vec(file_loc,label_pos):
     label_list = []
@@ -50,7 +35,7 @@ def cifarList2Vec(file_loc,label_pos):
             label_list.append(line_arry[label_pos])
     return np.array(label_list)
 
-def write_lmdb(filename, map_size, progress_write, data, index_list):
+def write_lmdb(filename, map_size, progress_write, data, labels, index_list):
     with lmdb.open(filename, map_size=map_size) as env:
         with env.begin(write=True) as txn:   # txn is a Transaction object
             for i in index_list:
@@ -66,27 +51,47 @@ def write_lmdb(filename, map_size, progress_write, data, index_list):
                 if not i%progress_write:
                     print "Wrote frame "+str(i)+" of "+str(index_list[-1])
 
-pvData = readpvpfile(pvp_file, progress_write) # This takes some time...
-pvActivities = pvObj2DenseMat(pvData)
-labels = cifarList2Vec(image_list, 6).astype(np.int64)
+def main(args):
+    """
+        Entry point.
+    """
 
-assert(labels.shape[0] == pvActivities.shape[0])
+    assert(args.write_progress >= 0)
+    assert(args.validation_num >= 0)
+    assert(os.path.dirname(args.output_file))
 
-if write_separate_labels:
-    label_out_text = open('labels.txt','w')
-    for label in labels:
-        label_out_text.write(str(label)+'\n')
-    label_out_text.close()
+    if not os.path.exists(os.path.dirname(args.output_file)):
+        os.makedirs(os.path.dirname(args.output_file))
 
-# Database size set to be 10x bigger than needed
-# as suggested in http://deepdish.io/2015/04/28/creating-lmdb-in-python/
-map_size = pvActivities[0:len(pvData)-num_validation].nbytes * 10
+    pvData = readpvpfile(args.pvp_file, args.write_progress) # This takes some time...
+    num_imgs = pvData['values'].shape[0]
+    nf = pvData['header']['nf']
+    ny = pvData['header']['ny']
+    nx = pvData['header']['nx']
+    pvActivities = np.array(pvData['values'].todense()).reshape((num_imgs,nf,ny,nx)).astype('float')
+    labels = cifarList2Vec(args.image_list, args.image_label_pos).astype(np.int64)
 
-# Create initial set
-write_lmdb(lmdb_file, map_size, progress_write, pvActivities, range(len(pvData) - num_validation))
+    assert(labels.shape[0] == pvActivities.shape[0])
 
-# Create validation set if required
-if (num_validation > 0):
-    print "-------\nWriting validation set\n-------"
-    map_size = pvActivities[len(pvData)-num_validation:len(pvData)].nbytes * 10
-    write_lmdb(validation_file, map_size, progress_write, pvActivities, range(len(pvData)-num_validation, len(pvData)))
+    if args.label_output:
+        label_out_text = open(os.path.dirname(args.output_file)+'labels.txt','w')
+        for label in labels:
+            label_out_text.write(str(label)+'\n')
+        label_out_text.close()
+
+    # Database size set to be 10x bigger than needed
+    # as suggested in http://deepdish.io/2015/04/28/creating-lmdb-in-python/
+    map_size = pvActivities[0:num_imgs-args.validation_num].nbytes * 10
+
+    # Create initial set
+    write_lmdb(args.output_file, map_size, args.write_progress, pvActivities, labels, range(num_imgs - args.validation_num))
+
+    # Create validation set if required
+    if (args.validation_num > 0):
+        print "-------\nWriting validation set\n-------"
+        map_size = pvActivities[num_imgs-args.validation_num:num_imgs].nbytes * 10
+        write_lmdb(args.validation_file, map_size, args.write_progress, pvActivities, labels, range(num_imgs - args.validation_num, num_imgs))
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    main(args)
