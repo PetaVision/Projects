@@ -21,9 +21,6 @@ ip2_lrm_bias = 1      # Learning rate multiplier for ip2 bias
 
 train_data = caffe.NetSpec()
 train_data.data, train_data.label = L.Data(batch_size=batch_size, backend=P.Data.LMDB, source=lmdb_train_file, phase=0, ntop=2)
-#
-#import IPython
-#IPython.embed()
 
 test_data = caffe.NetSpec()
 test_data.data, test_data.label = L.Data(batch_size=batch_size, backend=P.Data.LMDB, source=lmdb_test_file, phase=1, ntop=2)
