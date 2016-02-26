@@ -13,7 +13,7 @@ image_dataset = '/Users/dpaiton/Work/Datasets/CIFAR/cifar10/cifar10_train_lmdb/'
 
 #MLP params
 batch_size = 100      # Batch size for training with SGD
-num_ip1_params = 1000 # Number of free parameters in ip1
+num_ip1_params = 768  # Number of free parameters in ip1
 ip1_lrm_weights = 1   # Learning rate multiplier for ip1 weights
 ip1_lrm_bias = 1      # Learning rate multiplyer for ip1 bias
 ip2_lrm_weights = 1   # Learning rate multiplier for ip2 weights
@@ -39,7 +39,7 @@ net.ip1 = L.InnerProduct(net.data, num_output=num_ip1_params, \
 net.ip1.fn.params['param'] = [{'lr_mult': ip1_lrm_weights, 'decay_mult': 1}, \
                                   {'lr_mult': ip1_lrm_bias, 'decay_mult': 1}]
 net.relu1 = L.ReLU(net.ip1, in_place=True)
-net.ip2 = L.InnerProduct(net.data, num_output=10, \
+net.ip2 = L.InnerProduct(net.relu1, num_output=10, \
         weight_filler={'type': 'xavier'}, \
         bias_filler={'type': 'constant', 'value': 0})
 net.ip2.fn.params['param'] = [{'lr_mult': ip2_lrm_weights, 'decay_mult': 1}, \

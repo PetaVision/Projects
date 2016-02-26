@@ -7,7 +7,7 @@ log_file = 'sparse_model_output_v0.log'
 
 with open(log_file, 'r') as f:
     log_text = f.read()
-    max_iter = float(re.findall("max_iter: (\d+)",log_text)[0])
+    max_iter = float(re.findall("max_iter: (\d+)", log_text)[0])
 
     time_start = 0
     time_step = float(re.findall("display: (\d+)", log_text)[0])

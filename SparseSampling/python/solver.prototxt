@@ -8,35 +8,35 @@ test_iter: 100
 test_interval: 1000
 
 # Learning parameters for network
-base_lr: 0.1
-momentum: 0.9
-weight_decay: 0.005
+base_lr: 0.001
+momentum: 0.6
+weight_decay: 0.0005
 
 # The learning rate policy.
 # Step the LR down by lr * gamma each stepsize time steps.
 
-#lr_policy: "step"
-#stepsize: 10000
-#gamma: 0.9
+lr_policy: "step"
+stepsize: 5000
+gamma: 0.9
 
 #lr_policy: "inv"
 #gamma: 0.0001
 #power: 0.75
 
-lr_policy: "multistep"
-gamma: 0.1
-stepvalue: 60000
-stepvalue: 65000
-stepvalue: 70000
-stepvalue: 80000
+#lr_policy: "multistep"
+#gamma: 0.1
+#stepvalue: 60000 # 120 epochs
+#stepvalue: 65000 # 130 epochs
+#stepvalue: 70000 # 140 epochs
+#stepvalue: 80000 # 160 epochs
 
-# CIFAR has 60,000 training images
-max_iter: 300000 # 5 epochs
+# CIFAR has 50,000 training images
+max_iter: 100000 # 200 epochs
 # Display frequency
 display: 1000
 # Snapshot intermediate results
-snapshot: 150000
-snapshot_prefix: "checkpoints/mlp_sparse"
+snapshot: 100000
+snapshot_prefix: "checkpoints/mlp_sparse_v0"
 
 # solver mode: CPU or GPU
 solver_mode: CPU
