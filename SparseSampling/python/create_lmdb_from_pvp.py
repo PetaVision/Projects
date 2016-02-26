@@ -21,11 +21,12 @@ parser = argparse.ArgumentParser(description="Create an LMDB file from an input 
 parser.add_argument("-p", "--pvp-file", type=str, required=True, help="input PVP file")
 parser.add_argument("-i", "--image-list", type=str, required=True, help="text list of image files")
 parser.add_argument("-o", "--output-file", type=str, required=True, help="output file name")
-parser.add_argument("-s", "--image-label-pos", type=int, default=6, required=False, help="location of image label in image_list file")
+parser.add_argument("-s", "--image-label-pos", type=int, default=0, required=False, help="location of image label in image_list file")
 parser.add_argument("-w", "--write-progress", type=int, default=0, required=False, help="interval to write out progress")
 parser.add_argument("-l", "--label-output", action="store_true", required=False, help="set flag to create label text file")
 parser.add_argument("-v", "--validation-num", type=int, default=0, required=False, help="number of images to use for validation set (0 is training only)")
 parser.add_argument("-a", "--validation-file", type=str, default="./validation_lmdb", required=False, help="validation set filename")
+parser.add_argument("-m", "--mode", type=str, default="TRAIN", required=False, help="mode should be TRAIN or TEST")
 
 def cifarList2Vec(file_loc,label_pos):
     label_list = []
@@ -51,6 +52,14 @@ def write_lmdb(filename, map_size, progress_write, data, labels, index_list):
                 if not i%progress_write:
                     print "Wrote frame "+str(i)+" of "+str(index_list[-1])
 
+def gen_test_mat(pvActivities, num_avg, num_imgs):
+    out_mat = np.zeros((int(pvActivities.shape[0]/float(num_imgs)),) + pvActivities.shape[1:])
+    for start_idx in range(num_avg):
+        out_mat += pvActivities[start_idx:pvActivities.shape[0]:num_imgs,...]
+    if num_avg > 0:
+        out_mat /= float(num_avg)
+    return out_mat
+
 def main(args):
     """
         Entry point.
@@ -58,10 +67,10 @@ def main(args):
 
     assert(args.write_progress >= 0)
     assert(args.validation_num >= 0)
-    assert(os.path.dirname(args.output_file))
 
-    if not os.path.exists(os.path.dirname(args.output_file)):
-        os.makedirs(os.path.dirname(args.output_file))
+    if os.path.isdir(os.path.dirname(args.output_file)):
+        if not os.path.exists(os.path.dirname(args.output_file)):
+            os.makedirs(os.path.dirname(args.output_file))
 
     pvData = readpvpfile(args.pvp_file, args.write_progress) # This takes some time...
     num_imgs = pvData['values'].shape[0]
@@ -71,26 +80,40 @@ def main(args):
     pvActivities = np.array(pvData['values'].todense()).reshape((num_imgs,nf,ny,nx)).astype('float')
     labels = cifarList2Vec(args.image_list, args.image_label_pos).astype(np.int64)
 
-    assert(labels.shape[0] == pvActivities.shape[0])
-
     if args.label_output:
-        label_out_text = open(os.path.dirname(args.output_file)+'labels.txt','w')
+        if os.path.isdir(os.path.dirname(args.output_file)):
+            label_file = os.path.dirname(args.output_file)+'labels.txt'
+        else:
+            label_file = 'labels.txt'
+        label_out_text = open(label_file,'w')
         for label in labels:
             label_out_text.write(str(label)+'\n')
         label_out_text.close()
 
-    # Database size set to be 10x bigger than needed
-    # as suggested in http://deepdish.io/2015/04/28/creating-lmdb-in-python/
-    map_size = pvActivities[0:num_imgs-args.validation_num].nbytes * 10
+    if args.mode.upper() == "TRAIN":
+        assert(labels.shape[0] == pvActivities.shape[0])
 
-    # Create initial set
-    write_lmdb(args.output_file, map_size, args.write_progress, pvActivities, labels, range(num_imgs - args.validation_num))
+        # Database size set to be 10x bigger than needed
+        # as suggested in http://deepdish.io/2015/04/28/creating-lmdb-in-python/
+        map_size = pvActivities[0:num_imgs-args.validation_num].nbytes * 10
 
-    # Create validation set if required
-    if (args.validation_num > 0):
-        print "-------\nWriting validation set\n-------"
-        map_size = pvActivities[num_imgs-args.validation_num:num_imgs].nbytes * 10
-        write_lmdb(args.validation_file, map_size, args.write_progress, pvActivities, labels, range(num_imgs - args.validation_num, num_imgs))
+        # Create initial set
+        write_lmdb(args.output_file, map_size, args.write_progress, pvActivities, labels, range(num_imgs - args.validation_num))
+
+        # Create validation set if required
+        if (args.validation_num > 0):
+            print "-------\nWriting validation set\n-------"
+            map_size = pvActivities[num_imgs-args.validation_num:num_imgs].nbytes * 10
+            write_lmdb(args.validation_file, map_size, args.write_progress, pvActivities, labels, range(num_imgs - args.validation_num, num_imgs))
+
+    elif args.mode.upper() == "TEST":
+        for num_avg in range(1,5):
+            out_mat = gen_test_mat(pvActivities, num_avg, 4)
+            map_size = out_mat.nbytes * 10
+            write_lmdb(args.output_file+'_samples_'+str(num_avg), map_size, args.write_progress, out_mat, labels, range(len(labels)))
+
+    else:
+        assert False, "Input mode must be TRAIN or TEST."
 
 if __name__ == "__main__":
     args = parser.parse_args()
