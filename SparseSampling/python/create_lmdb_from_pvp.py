@@ -107,10 +107,10 @@ def main(args):
             write_lmdb(args.validation_file, map_size, args.write_progress, pvActivities, labels, range(num_imgs - args.validation_num, num_imgs))
 
     elif args.mode.upper() == "TEST":
-        for num_avg in range(1,5):
-            out_mat = gen_test_mat(pvActivities, num_avg, 4)
+        for num_avg in range(1,101):
+            out_mat = gen_test_mat(pvActivities, num_avg, 100)
             map_size = out_mat.nbytes * 10
-            write_lmdb(args.output_file+'_samples_'+str(num_avg), map_size, args.write_progress, out_mat, labels, range(len(labels)))
+            write_lmdb(args.output_file+'_samples_'+str(num_avg), map_size, args.write_progress, out_mat, labels, range(1385))
 
     else:
         assert False, "Input mode must be TRAIN or TEST."
