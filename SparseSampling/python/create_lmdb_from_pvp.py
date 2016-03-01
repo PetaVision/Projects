@@ -72,7 +72,7 @@ def main(args):
         if not os.path.exists(os.path.dirname(args.output_file)):
             os.makedirs(os.path.dirname(args.output_file))
 
-    pvData = readpvpfile(args.pvp_file, args.write_progress) # This takes some time...
+    pvData = readpvpfile(args.pvp_file, args.write_progress)
     num_imgs = pvData['values'].shape[0]
     nf = pvData['header']['nf']
     ny = pvData['header']['ny']
@@ -108,6 +108,7 @@ def main(args):
 
     elif args.mode.upper() == "TEST":
         for num_avg in range(1,101):
+            print "Wrote output for "+str(num_avg)+" perturbations."
             out_mat = gen_test_mat(pvActivities, num_avg, 100)
             map_size = out_mat.nbytes * 10
             write_lmdb(args.output_file+'_samples_'+str(num_avg), map_size, args.write_progress, out_mat, labels, range(1385))
