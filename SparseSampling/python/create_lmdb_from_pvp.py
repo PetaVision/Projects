@@ -49,13 +49,11 @@ def write_lmdb(filename, map_size, progress_write, data, labels, index_list):
                 datum = caffe.io.array_to_datum(data[i], int(labels[i]))
                 keystr = '{:04}'.format(i)
                 txn.put(keystr.encode('ascii'), datum.SerializeToString())
-                if not i%progress_write:
-                    print "Wrote frame "+str(i)+" of "+str(index_list[-1])
 
-def gen_test_mat(pvActivities, num_avg, num_imgs):
-    out_mat = np.zeros((int(pvActivities.shape[0]/float(num_imgs)),) + pvActivities.shape[1:])
+def gen_test_mat(pvActivities, num_avg, skip):
+    out_mat = np.zeros((int(pvActivities.shape[0]/float(skip)),) + pvActivities.shape[1:])
     for start_idx in range(num_avg):
-        out_mat += pvActivities[start_idx:pvActivities.shape[0]:num_imgs,...]
+        out_mat += pvActivities[start_idx:pvActivities.shape[0]:skip,...]
     if num_avg > 0:
         out_mat /= float(num_avg)
     return out_mat
@@ -65,6 +63,9 @@ def main(args):
         Entry point.
     """
 
+    num_perturbations = 100
+    max_imgs = 1000 #float('inf')
+
     assert(args.write_progress >= 0)
     assert(args.validation_num >= 0)
 
@@ -72,13 +73,16 @@ def main(args):
         if not os.path.exists(os.path.dirname(args.output_file)):
             os.makedirs(os.path.dirname(args.output_file))
 
-    pvData = readpvpfile(args.pvp_file, args.write_progress)
+    pvData = readpvpfile(args.pvp_file, args.write_progress, max_imgs)
     num_imgs = pvData['values'].shape[0]
     nf = pvData['header']['nf']
     ny = pvData['header']['ny']
     nx = pvData['header']['nx']
     pvActivities = np.array(pvData['values'].todense()).reshape((num_imgs,nf,ny,nx)).astype('float')
-    labels = cifarList2Vec(args.image_list, args.image_label_pos).astype(np.int64)
+    if max_imgs == float('inf'):
+        labels = cifarList2Vec(args.image_list, args.image_label_pos).astype(np.int64)
+    else:
+        labels = cifarList2Vec(args.image_list, args.image_label_pos).astype(np.int64)[0:max_imgs]
 
     if args.label_output:
         if os.path.isdir(os.path.dirname(args.output_file)):
@@ -107,11 +111,11 @@ def main(args):
             write_lmdb(args.validation_file, map_size, args.write_progress, pvActivities, labels, range(num_imgs - args.validation_num, num_imgs))
 
     elif args.mode.upper() == "TEST":
-        for num_avg in range(1,101):
-            print "Wrote output for "+str(num_avg)+" perturbations."
-            out_mat = gen_test_mat(pvActivities, num_avg, 100)
+        for num_avg in range(1,num_perturbations+1):
+            out_mat = gen_test_mat(pvActivities, num_avg, num_perturbations)
             map_size = out_mat.nbytes * 10
-            write_lmdb(args.output_file+'_samples_'+str(num_avg), map_size, args.write_progress, out_mat, labels, range(1385))
+            write_lmdb(args.output_file+'_samples_'+str(num_avg), map_size, args.write_progress, out_mat, labels, range(num_imgs/num_perturbations))
+            print "Wrote output for "+str(num_avg)+" perturbations."
 
     else:
         assert False, "Input mode must be TRAIN or TEST."
