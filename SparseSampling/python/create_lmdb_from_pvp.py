@@ -5,14 +5,6 @@ import scipy.sparse as sparse
 import lmdb
 import argparse
 
-# Add paths
-sys.path.insert(0, os.path.abspath(os.environ['HOME']+'/Work/LANL/PetaVision/OpenPV/pv-core/python/')) # PetaVision
-sys.path.insert(0, os.path.abspath(os.environ['HOME']+'/Work/Libraries/caffe/python/')) # Caffe
-
-# Import aux libraries
-from pvtools import *
-import caffe
-
 # IPython is for debugging
 import IPython
 
@@ -22,6 +14,8 @@ parser = argparse.ArgumentParser(description="Create an LMDB file from an input 
 parser.add_argument("-p", "--pvp-file", type=str, required=True, help="input PVP file")
 parser.add_argument("-i", "--image-list", type=str, required=True, help="text list of image files")
 parser.add_argument("-o", "--output-file", type=str, required=True, help="output file name")
+parser.add_argument("-pv", "--pv-path", type=str, required=True, help="path to PetaVision python folder")
+parser.add_argument("-ca", "--caffe-path", type=str, required=True, help="path to Caffe python folder")
 parser.add_argument("-s", "--image-label-pos", type=int, default=0, required=False, help="location of image label in image_list file")
 parser.add_argument("-w", "--write-progress", type=int, default=0, required=False, help="interval to write out progress")
 parser.add_argument("-l", "--label-output", action="store_true", required=False, help="set flag to create label text file")
@@ -131,4 +125,13 @@ def main(args):
 
 if __name__ == "__main__":
     args = parser.parse_args()
+
+    # Add paths
+    sys.path.insert(0, os.path.abspath(args.pv_path))
+    sys.path.insert(0, os.path.abspath(args.caffe_path))
+    
+    # Import aux libraries
+    from pvtools import *
+    import caffe
+
     main(args)
