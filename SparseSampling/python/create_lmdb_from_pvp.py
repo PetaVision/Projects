@@ -6,13 +6,14 @@ import lmdb
 import argparse
 
 # Add paths
-sys.path.insert(0, os.path.abspath('../../../python/')) # PetaVision
+sys.path.insert(0, os.path.abspath(os.environ['HOME']+'/Work/LANL/PetaVision/OpenPV/pv-core/python/')) # PetaVision
 sys.path.insert(0, os.path.abspath(os.environ['HOME']+'/Work/Libraries/caffe/python/')) # Caffe
 
 # Import aux libraries
 from pvtools import *
 import caffe
 
+# IPython is for debugging
 import IPython
 
 parser = argparse.ArgumentParser(description="Create an LMDB file from an input pvp file.",
@@ -50,19 +51,6 @@ def write_lmdb(filename, map_size, progress_write, data, labels, index_list):
                 keystr = '{:04}'.format(i)
                 txn.put(keystr.encode('ascii'), datum.SerializeToString())
 
-def gen_test_mat(pvData, num_avg, skip):
-    num_frames = pvData['values'].shape[0]
-    num_images = int(num_frames/float(skip))
-    nf = pvData['header']['nf']
-    ny = pvData['header']['ny']
-    nx = pvData['header']['nx']
-    out_mat = np.zeros((num_images, nf, ny, nx))
-    for start_idx in range(num_avg):
-        out_mat += np.array(pvData['values'].tocsc()[start_idx:num_frames:skip].todense()).reshape(num_images, nf, ny, nx)
-    if num_avg > 0:
-        out_mat /= float(num_avg)
-    return out_mat
-
 def main(args):
     """
         Entry point.
@@ -80,14 +68,16 @@ def main(args):
         if not os.path.exists(os.path.dirname(args.output_file)):
             os.makedirs(os.path.dirname(args.output_file))
 
-    pvData = readpvpfile(args.pvp_file, args.write_progress, max_frames)
-    num_imgs = pvData['values'].shape[0]
-    nf = pvData['header']['nf']
-    ny = pvData['header']['ny']
-    nx = pvData['header']['nx']
-    #TODO: It would be better to do slicing in sparse format
+    #TODO: make TRAIN efficient like TEST is
     if args.mode.upper() == "TRAIN":
+        pvData = readpvpfile(args.pvp_file, args.write_progress, max_frames)
+        num_imgs = pvData['values'].shape[0]
+        nf = pvData['header']['nf']
+        ny = pvData['header']['ny']
+        nx = pvData['header']['nx']
         pvActivities = np.array(pvData['values'].todense()).reshape((num_imgs,nf,ny,nx)).astype('float')
+    else:
+        pvHeader = readpvpheader(args.pvp_file)
 
     if max_frames == float('inf'):
         labels = cifarList2Vec(args.image_list, args.image_label_pos).astype(np.int64)
@@ -122,9 +112,18 @@ def main(args):
 
     elif args.mode.upper() == "TEST":
         for num_avg in range(1,num_perturbations+1):
-            out_mat = gen_test_mat(pvData, num_avg, num_perturbations)
+            num_images = int(max_frames/float(num_perturbations))
+            nf = pvHeader['nf']
+            ny = pvHeader['ny']
+            nx = pvHeader['nx']
+            out_mat = np.zeros((num_images, nf, ny, nx))
+            for start_idx in range(num_avg):
+                pvData = readpvpfile(args.pvp_file, 0, max_frames, start_idx, num_perturbations)
+                out_mat += np.array(pvData['values'].todense()).reshape(num_images, nf, ny, nx)
+            if num_avg > 0:
+                out_mat /= float(num_avg)
             map_size = out_mat.nbytes * 10
-            write_lmdb(args.output_file+'_samples_'+str(num_avg), map_size, args.write_progress, out_mat, labels, range(num_imgs/num_perturbations))
+            write_lmdb(args.output_file+'_samples_'+str(num_avg), map_size, args.write_progress, out_mat, labels, range(num_images))
             print "Wrote output for "+str(num_avg)+" perturbations."
 
     else:
