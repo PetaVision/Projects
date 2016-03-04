@@ -75,12 +75,15 @@ Weights learned from natural scenes via the $l_{0}$ sparse coding energy functio
 %\end{equation}
 
 \begin{equation}
-    E(t) = \tfrac{1}{2} \sum\limits_{p}^{P} \left[ I_{p} - \sum\limits_{m}^{M}T(u_{m}(t)) \phi_{m,p} \right]^{2} + \lambda \sum\limits_{m}^{M} T(u_{m}(t))
+    E(t) = \overbrace{ \tfrac{1}{2} \sum\limits_{p}^{P} \left[ I_{p} - \sum\limits_{m}^{M}T(u_{m}(t)) \phi_{m,p} \right]^{2}}^\text{Preserve Information} +
+    \overbrace{ \lambda \sum\limits_{m}^{M} T(u_{m}(t)) }^\text{Limit Activations}
 \label{indexenergyfunc}
 \end{equation}
 
 \begin{equation}
-    \dot{u_{i}}(t) = \frac{1}{\tau} \left[ I\phi_{i} - u_{i}(t) - \sum_{m \neq i}^{M}\phi_{i}\phi_{m}^TT(u_{m}(t)) \right]
+    \dot{u_{i}}(t) = \frac{1}{\tau} \left[ \overbrace{ I\phi_{i} }^{Hebbian Drive} - \overbrace{ u_{i}(t) }^{Membrane Leak} -
+    \overbrace{ \sum_{m \neq i}^{M}\phi_{i}\phi_{m}^T T(u_{m}(t)) }^{Competition} +
+    \overbrace { \mathbf{I}T(u_{i}(t)) }^{Self Interaction} \right]
 \label{lcaupdate}
 \end{equation}
 
