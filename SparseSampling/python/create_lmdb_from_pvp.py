@@ -129,7 +129,7 @@ if __name__ == "__main__":
     # Add paths
     sys.path.insert(0, os.path.abspath(args.pv_path))
     sys.path.insert(0, os.path.abspath(args.caffe_path))
-    
+
     # Import aux libraries
     from pvtools import *
     import caffe
