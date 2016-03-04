@@ -3,8 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import IPython
 
-version = 0
-log_files = ['test_s'+str(x)+'_output_v'+str(version)+'.log' for x in range(1,5)]
+model_version = 1
+data_version = 1
+log_files = ['test_s'+str(x)+'_output_mv'+str(model_version)+'_dv'+str(data_version)+'.log' for x in range(1,20)]
 
 test_accuracy_vals = []
 for log_file in log_files:
