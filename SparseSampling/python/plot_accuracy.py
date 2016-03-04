@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import IPython
 
-log_file = 'sparse_model_output_v0.log'
+log_file = 'sparse_model_output_v1.log'
 
 with open(log_file, 'r') as f:
     log_text = f.read()
@@ -32,7 +32,7 @@ ax1.set_ylim([0, 1])
 ax2 = fig.add_subplot(2,1,2)
 line2 = ax2.plot(epoch_list[0:len(test_accuracy_vals)], test_accuracy_vals[0:len(epoch_list)], 'b', label='validation_accuracy')
 #line2 = ax2.plot(time_list[0:len(test_accuracy_vals)], test_accuracy_vals[0:len(time_list)], 'b', label='validation_accuracy')
-#ax2.set_ylabel('Validation Accuracy')
+ax2.set_ylabel('Validation Accuracy')
 ax2.set_xlabel('Number of epochs')
 #ax2.set_xlabel('Number of iterations')
 ax2.set_ylim([0, 1])
