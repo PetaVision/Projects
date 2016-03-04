@@ -1,0 +1,58 @@
+\RequirePackage{fix-cm}
+
+%\documentclass{svjour3}                     % onecolumn (standard format)
+%\documentclass[smallcondensed]{svjour3}     % onecolumn (ditto)
+\documentclass[smallextended]{svjour3}       % onecolumn (second format)
+%\documentclass[twocolumn]{svjour3}          % twocolumn
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{tabto}
+%\usepackage{latexsym}
+%\usepackage{mathptmx}      % use Times fonts if available on your TeX system
+
+\smartqed  % flush right qed marks, e.g. at end of proof
+
+% Math definitions
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\newcommand{\tightoverset}[2]{\mathop{#2}\limits^{\vbox to -.6ex{\kern-0.75ex\hbox{$#1$}\vss}}}
+%\newcommand{\tab}[1]{%
+%    \settowidth{\tabcont}{#1}
+%    {\makebox[0.15\linewidth][l]{#1}\ignorespaces}
+%}%
+
+% Insert the name of "your journal" with
+\journalname{Neuro-Inspired Computational Elements Workshop}
+
+\begin{document}
+
+\title{
+%\thanks{Grants or other notes
+%about the article that should go on the front page should be
+%placed here. General acknowledgments should be placed at the end of the article.}
+}
+
+%\subtitle{}
+
+%\titlerunning{Short form of title}        % if too long for running head
+
+\author{}
+
+
+\authorrunning{}% if too long for running head
+
+
+\institute{}
+}
+
+\date{}
+
+
+\begin{displaymath}
+    \dot{u_{i}}(t) = \frac{1}{\tau} \left[ \overbrace{ I\phi_{i} }^{Hebbian Drive} - \overbrace{ u_{i}(t) }^{Membrane Leak} -
+    \overbrace{ \sum_{m \neq i}^{M}\phi_{i}\phi_{m}^T T(u_{m}(t)) }^{Competition} +
+    \overbrace { \mathbf{I}T(u_{i}(t)) }^{Self Interaction} \right]
+\label{lcaupdate}
+\end{displaymath}
+
+\end{document}

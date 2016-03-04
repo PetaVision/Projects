@@ -59,46 +59,8 @@
 Weights learned from natural scenes via the $l_{0}$ sparse coding energy function have been shown to match well to classical and non-classical biological receptive field properties of pyramidal cells in primary visual cortex. However, the $l_{0}$ energy function is non-convex and thus without a known global minima. Therefore, a network that minimizes an $l_{0}$ cost function could fall into any number of minima that lie along a manifold representing the space of possible representations of the input data. It is not clear how the amount of information differs between these minima, or how the energy level varies between minima. We propose the hypothesis that these local minima have varying support for whole-scene object classification. We test the hypothesis by stochastically sampling multiple fixed points of the Hopfield-like LCA sparse solver network for a basis set learned with an $l_{0}$ sparse coding energy function. We show that sampling multiple local minima in the energy landscape enables improved classification performance.
 \end{abstract}
 
-\section{Equations}
-
-%\begin{equation}
-%    \argmin\limits_{a}
-%        \left( E =
-%            \overbrace{ \tfrac{1}{2} \| I - R \|_{2}^{2} }^\text{Preserve Information} +
-%        \overbrace{ \lambda \sum\limits_{m}T_{\lambda}(u_{m}) }^\text{Limit Activations} \right)
-%\label{energyfunc}
-%\end{equation}
-%
-%\begin{equation}
-%    R = \sum\limits_{m}^{M} T(u_{m}) \phi_{m}
-%\label{recon}
-%\end{equation}
-
-\begin{equation}
-    E(t) = \overbrace{ \tfrac{1}{2} \sum\limits_{p}^{P} \left[ I_{p} - \sum\limits_{m}^{M}T(u_{m}(t)) \phi_{m,p} \right]^{2}}^\text{Preserve Information} +
-    \overbrace{ \lambda \sum\limits_{m}^{M} T(u_{m}(t)) }^\text{Limit Activations}
-\label{indexenergyfunc}
-\end{equation}
-
-\begin{equation}
-    \dot{u_{i}}(t) = \frac{1}{\tau} \left[ \overbrace{ I\phi_{i} }^{Hebbian Drive} - \overbrace{ u_{i}(t) }^{Membrane Leak} -
-    \overbrace{ \sum_{m \neq i}^{M}\phi_{i}\phi_{m}^T T(u_{m}(t)) }^{Competition} +
-    \overbrace { \mathbf{I}T(u_{i}(t)) }^{Self Interaction} \right]
-\label{lcaupdate}
-\end{equation}
-
-\begin{equation}
-    T_{\lambda}(u_{m}(t)) = \left\{
-    \begin{aligned}
-        0,\;\; &u_{m}(t)\; \leq\; \lambda \\
-        u_{m}(t),\;\; &u_{m}(t)\; >\; \lambda
-    \end{aligned}
-    \right.
-\label{thresholdfunc}
-\end{equation}
-
 %\begin{acknowledgements}
-%\noindent I would like to thank Dr. Olshausen, who provided valuable feedback for this proposal.\\
+%
 %\end{acknowledgements}
 
 % BibTeX users please use one of
