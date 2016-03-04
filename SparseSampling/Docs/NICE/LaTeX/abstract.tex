@@ -61,18 +61,18 @@ Weights learned from natural scenes via the $l_{0}$ sparse coding energy functio
 
 \section{Equations}
 
-\begin{equation}
-    \argmin\limits_{a}
-        \left( E =
-            \overbrace{ \tfrac{1}{2} \| I - R \|_{2}^{2} }^\text{Preserve Information} +
-        \overbrace{ \lambda \sum\limits_{m}T_{\lambda}(u_{m}) }^\text{Limit Activations} \right)
-\label{energyfunc}
-\end{equation}
-
-\begin{equation}
-    R = \sum\limits_{m}^{M} T(u_{m}) \phi_{m}
-\label{recon}
-\end{equation}
+%\begin{equation}
+%    \argmin\limits_{a}
+%        \left( E =
+%            \overbrace{ \tfrac{1}{2} \| I - R \|_{2}^{2} }^\text{Preserve Information} +
+%        \overbrace{ \lambda \sum\limits_{m}T_{\lambda}(u_{m}) }^\text{Limit Activations} \right)
+%\label{energyfunc}
+%\end{equation}
+%
+%\begin{equation}
+%    R = \sum\limits_{m}^{M} T(u_{m}) \phi_{m}
+%\label{recon}
+%\end{equation}
 
 \begin{equation}
     E(t) = \tfrac{1}{2} \sum\limits_{p}^{P} \left[ I_{p} - \sum\limits_{m}^{M}T(u_{m}(t)) \phi_{m,p} \right]^{2} + \lambda \sum\limits_{m}^{M} T(u_{m}(t))
@@ -80,11 +80,7 @@ Weights learned from natural scenes via the $l_{0}$ sparse coding energy functio
 \end{equation}
 
 \begin{equation}
-\begin{aligned}
-    \dot{u_{i}}(t) \propto
-    &-\frac{\partial E}{\partial T(u_{i}(t))} \\
-    = &\frac{1}{\tau} \left[ b_{i} - u_{i}(t) - \sum_{m \neq i}^{M}\phi_{i}\phi_{m}^TT(u_{m}(t)) \right]
-\end{aligned}
+    \dot{u_{i}}(t) = \frac{1}{\tau} \left[ I\phi_{i} - u_{i}(t) - \sum_{m \neq i}^{M}\phi_{i}\phi_{m}^TT(u_{m}(t)) \right]
 \label{lcaupdate}
 \end{equation}
 
