@@ -55,7 +55,7 @@ def main(args):
     # Each image has num_perturbations frames
     num_perturbations = 50
     # max_frames is the number of input images * the number of perturbations
-    max_frames = 250000 #float('inf')
+    max_frames = 2000*num_perturbations #float('inf')
 
     assert(args.write_progress >= 0)
     assert(args.validation_num >= 0)
