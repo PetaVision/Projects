@@ -6,7 +6,7 @@ import IPython
 # CIFAR has 60000 training images
 num_frames = -1 # [int] number of frames to load in (all if <0)
 
-env = lmdb.open('pvCifar_val_lmdb', readonly=True)
+env = lmdb.open('lmdb_datasets/pvCifar_test_lmdb_v1_samples_11', readonly=True)
 datum = caffe.proto.caffe_pb2.Datum()
 
 x = []
