@@ -4,7 +4,7 @@ layer {
   top: "data"
   top: "label"
   data_param {
-    source: "pvCifar_test_lmdb_v1_samples_100"
+    source: "lmdb_datasets/pvCifar_test_lmdb_v1_samples_1"
     batch_size: 100
     backend: LMDB
   }
