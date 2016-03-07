@@ -2,7 +2,6 @@ import numpy as np
 import scipy.io
 import matplotlib
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 import warnings
 import IPython
 
@@ -46,13 +45,14 @@ matplotlib.rc('image', **image)
 #y0, y1 = axes[0].get_ylim()
 #axes[0].set_aspect((x1-x0)/(y1-y0))
 #axes[0].set_ylabel('Hamming Distance from\nInitial Fixed Point')
-#axes[0].set_xlabel('Number of Perturbations')
+#axes[0].set_xlabel('Number of Samples')
 #axes[0].autoscale(enable=True, axis='both', tight=False)
 #
 #im = axes[1].imshow(hammingMat['hamming'], origin='lower')
 #axes[1].set_title('Hamming Distance\nBetween Fixed Points')
 #axes[1].autoscale_view(tight=True, scalex=True, scaley=True)
 #
+#from mpl_toolkits.axes_grid1 import make_axes_locatable
 #divider = make_axes_locatable(axes[1])
 #cax = divider.append_axes("right", size="5%", pad=0.1)
 #cbar = plt.colorbar(im, cax=cax)
@@ -77,10 +77,13 @@ with warnings.catch_warnings():
     # of 'normal', 'equal', or 'auto' strings
     ax0.set_aspect((x1-x0)/(y1-y0))
 ax0.set_ylabel('Hamming Distance from\nInitial Fixed Point')
-ax0.set_xlabel('Number of Perturbations')
+ax0.set_xlabel('Number of Samples')
 
 ax1 = plt.subplot(gs[0, 1])
-im = ax1.imshow(hammingMat['hamming'], origin='lower')
+#modHammingMat = np.ma.masked_where(hammingMat['hamming'] == 0, hammingMat['hamming'])
+#cmap = plt.cm.OrRd
+#cmap.set_bad(color='black')
+im = ax1.imshow(hammingMat['hamming'], origin='lower', interpolation='none', extent=[0, 50, 0, 50])
 ax1.set_title('Hamming Distance\nBetween Fixed Points')
 
 ax2 = plt.subplot(gs[0, 2])
