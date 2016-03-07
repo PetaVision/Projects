@@ -19,10 +19,11 @@ parser.add_argument("-pv", "--pv-path", type=str, required=True, help="path to P
 parser.add_argument("-ca", "--caffe-path", type=str, required=True, help="path to Caffe python folder")
 parser.add_argument("-s", "--image-label-pos", type=int, default=0, required=False, help="location of image label in image_list file")
 parser.add_argument("-w", "--write-progress", type=int, default=0, required=False, help="interval to write out progress")
-parser.add_argument("-v", "--validation-num", type=int, default=0, required=False, help="number of images to use for validation set (0 is training only)")
-parser.add_argument("-a", "--validation-file", type=str, default="./validation_lmdb", required=False, help="validation set filename")
+parser.add_argument("-vn", "--validation-num", type=int, default=0, required=False, help="number of images to use for validation set (0 is training only)")
+parser.add_argument("-vf", "--validation-file", type=str, default="./validation_lmdb", required=False, help="validation set filename")
 parser.add_argument("-c", "--cpu-bias", action="store_true", required=False, help="if set, program will try to save memory by pushing computation to file IO")
 parser.add_argument("-l", "--label-output", action="store_true", required=False, help="set flag to create label text file")
+parser.add_argument("-a", "--avg-perturbations", action="store_true", required=False, help="set flag to average perturbations before output")
 parser.add_argument("-m", "--mode", type=str, default="TRAIN", required=False, help="mode should be TRAIN or TEST")
 
 def cifarList2Vec(file_loc,label_pos):
@@ -52,10 +53,10 @@ def main(args):
         Entry point.
     """
 
-    # Each image has num_perturbations frames
-    num_perturbations = 50
+    # Each image has num_pert frames
+    num_pert = 50
     # max_frames is the number of input images * the number of perturbations
-    max_frames = 2000*num_perturbations #float('inf')
+    max_frames = 5000*num_pert #float('inf')
 
     assert(args.write_progress >= 0)
     assert(args.validation_num >= 0)
@@ -109,27 +110,38 @@ def main(args):
     elif args.mode.upper() == "TEST":
         if not args.cpu_bias:
             pvData = readpvpfile(args.pvp_file, args.write_progress, max_frames)
-        for num_avg in range(1, num_perturbations+1):
-            num_images = int(max_frames/float(num_perturbations))
+        for pert_idx in range(1, num_pert+1):
+            num_imgs = int(max_frames/float(num_pert))
             nf = pvHeader['nf']
             ny = pvHeader['ny']
             nx = pvHeader['nx']
-            out_mat = np.zeros((num_images, nf, ny, nx))
-            for start_idx in range(num_avg):
+            out_mat = np.zeros((num_imgs, nf, ny, nx))
+            if args.avg_perturbations:
+                for start_idx in range(pert_idx):
+                    if args.cpu_bias:
+                        pvData = readpvpfile(args.pvp_file, args.write_progress, max_frames, start_idx, num_pert)
+                        out_mat += np.array(pvData['values'].todense()).reshape(num_imgs, nf, ny, nx)
+                        del pvData
+                    else:
+                        out_mat += np.array(pvData['values'].tocsc()[start_idx:max_frames:num_pert].todense()).reshape(num_imgs, nf, ny, nx)
+                    print "-->Loaded sample number "+str(start_idx)+" out of "+str(pert_idx)+" for all "+str(pvData['values'].shape[0])+" frames."
+                    gc.collect()
+                if pert_idx > 0:
+                    out_mat /= float(pert_idx)
+                map_size = out_mat.nbytes * 10
+                write_lmdb(args.output_file+'_samples_'+str(pert_idx), map_size, args.write_progress, out_mat, labels, range(num_imgs))
+                print "---->Wrote output for "+str(pert_idx)+" perturbations."
+            else:
                 if args.cpu_bias:
-                    pvData = readpvpfile(args.pvp_file, args.write_progress, max_frames, start_idx, num_perturbations)
-                    out_mat += np.array(pvData['values'].todense()).reshape(num_images, nf, ny, nx)
+                    pvData = readpvpfile(args.pvp_file, args.write_progress, max_frames, pert_idx-1, num_pert)
+                    out_mat = np.array(pvData['values'].todense).reshape(num_imgs, nf, ny, nx).astype(float)
                     del pvData
                 else:
-                    out_mat += np.array(pvData['values'].tocsc()[start_idx:max_frames:num_perturbations].todense()).reshape(num_images, nf, ny, nx)
-                print "-->Loaded sample number "+str(start_idx)+" out of "+str(num_avg)+" for all "+str(pvData['values'].shape[0])+" frames."
+                    out_mat = np.array(pvData['values'].tocsc()[pert_idx-1:max_frames:num_pert].todense()).reshape(num_imgs, nf, ny, nx).astype(float)
+                map_size = out_mat.nbytes * 10
+                write_lmdb(args.output_file+'_samples_'+str(pert_idx), map_size, args.write_progress, out_mat, labels, range(num_imgs))
+                print "-->Loaded sample number "+str(pert_idx)+" for all "+str(pvData['values'].shape[0])+" frames."
                 gc.collect()
-            if num_avg > 0:
-                out_mat /= float(num_avg)
-            map_size = out_mat.nbytes * 10
-            write_lmdb(args.output_file+'_samples_'+str(num_avg), map_size, args.write_progress, out_mat, labels, range(num_images))
-            print "---->Wrote output for "+str(num_avg)+" perturbations."
-
     else:
         assert False, "Input mode must be TRAIN or TEST."
 
