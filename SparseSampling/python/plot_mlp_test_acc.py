@@ -4,7 +4,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import IPython
 
-model_version = 1
+model_version = 0
 data_version = 1
 log_files = ['net_output/test_s'+str(x)+'_mv'+str(model_version)+'_dv'+str(data_version)+'.log' for x in range(1,51)]
 
@@ -36,7 +36,7 @@ matplotlib.rcParams.update({'figure.autolayout': True})
 
 fig = plt.figure()
 ax1 = fig.add_subplot(1,1,1)
-line1 = plt.plot([x.mean() for x in test_accuracy_vals])
+line1 = plt.plot([x.mean() for x in test_accuracy_vals]) # average samples
 ax1.set_ylim([0.42,0.45])
 ax1.set_title('MLP Performance Increases\nWith Number of Samples in Average')
 ax1.set_ylabel('Test Accuracy')
@@ -45,5 +45,4 @@ ax1.set_xlabel('Number of Samples in Average')
 plt.savefig('mlp_test_acc.eps', format='eps', transparent=True)
 
 #plt.show(block=False)
-#
 #IPython.embed()
