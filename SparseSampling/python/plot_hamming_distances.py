@@ -77,7 +77,7 @@ with warnings.catch_warnings():
     # of 'normal', 'equal', or 'auto' strings
     ax0.set_aspect((x1-x0)/(y1-y0))
 ax0.set_ylabel('Hamming Distance from\nInitial Fixed Point')
-ax0.set_xlabel('Number of Samples')
+ax0.set_xlabel('Sample Number')
 
 ax1 = plt.subplot(gs[0, 1])
 #modHammingMat = np.ma.masked_where(hammingMat['hamming'] == 0, hammingMat['hamming'])
