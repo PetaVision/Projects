@@ -1,0 +1,61 @@
+debugParsing = false;    // Debug the reading of this parameter file.
+
+HyPerCol "column" = {
+   nx = 32;   //2 inputs
+   ny = 32;
+   dt = 1.0;  //time step in ms.	     
+   randomSeed = 2394853940;  // Must be at least 8 digits long.  // if not set here,  clock time is used to generate seed
+   startTime = 0.0;
+   stopTime = 2.0; //100 training steps  
+   progressInterval = 10.0; //Program will output its progress at each progressStep
+   writeProgressToErr = false;  
+   outputPath = "output/";
+   filenamesContainLayerNames = true;  
+   filenamesContainConnectionNames = true;
+   checkpointRead = false;  
+   checkpointWrite = false;
+   suppressLastOutput = false; //Save the last output as checkpoint.
+   nbatch = 16;
+};
+
+//
+// layers
+//
+
+ConstantLayer "input" = {
+    restart = 0;
+    nxScale = 1; 
+    nyScale = 1;
+    nf = 64;
+    writeStep = 1;
+    initialWriteTime = 1.0;
+    mirrorBCflag = 0;
+    writeSparseActivity = false;
+    InitVType = "UniformRandomV";
+    minV = 100;
+    maxV = 200;
+    VThresh = -infinity;   
+    phase = 0;
+};
+
+BatchNorm "normalize" = {
+    restart = 0;
+    nxScale = 1; 
+    nyScale = 1;
+    nf = 64; // 8 outputs 
+    phase = 1;
+    triggerLayerName = NULL;
+    writeStep = 1.0;
+    initialWriteTime = 1.0;
+    mirrorBCflag = 1;
+    sparseLayer = false;
+    originalLayerName = "input";
+};
+
+BatchNormTestProbe "testProbe" = {
+   targetLayer                         = "normalize";
+   probeOutputFile                     = "normalizeTestProbe.txt";
+   triggerLayerName                    = NULL;
+   nnzThreshold                        = 0;
+};
+

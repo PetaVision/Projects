@@ -1,0 +1,7 @@
+*/*.log
+*/output
+Testing
+*/Debug
+*/Release
+CTestTestfile.cmake
+*/CTestTestfile.cmake
