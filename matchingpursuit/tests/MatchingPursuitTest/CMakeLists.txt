@@ -1,0 +1,2 @@
+pv_add_test()
+target_link_libraries(MatchingPursuitTest matchingpursuit)
