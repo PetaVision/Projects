@@ -1,5 +1,5 @@
 
-%% quick and dirty visualization harness for ground truth pvp files
+%% Quick and dirty visualization harness for ground truth pvp files
 %% each classID is assigned a different color
 %% where bounding boxes overlapp, the color is a mixture
 %% use this script to visualize ground truth sparse pvp files and for comparison with 
@@ -13,7 +13,7 @@ addpath("~/workspace/PetaVision/mlab/util");
 addpath("~/workspace/PetaVision/mlab/HyPerLCA");
 
 plot_flag = true;
-output_dir = "~/workspace/PASCAL_VOC/PASCAL_S1_96_S2_384_MLP/VOC2007_landscape";
+output_dir = "~/workspace/PASCAL_VOC/PASCAL_S1_96_S2_384_MLP/VOC2007_landscape2";
 
 %%draw reconstructed image
 DoG_weights = [];
@@ -31,7 +31,7 @@ Recon_LIFO_flag = true;
 drawnow;
 
 %% sparse activity
-Sparse_list ={["a2_"],  ["S1"]; ["a5_"], ["S2"]}; %%; ["a5_"], ["GroundTruth"]}; 
+Sparse_list ={["a2_"],  ["S1"]; ["a5_"], ["S2"]; ["a10_"], ["GroundTruth"]}; 
 fraction_Sparse_frames_read = 1;
 min_Sparse_skip = 1;
 fraction_Sparse_progress = 10;
@@ -44,14 +44,15 @@ drawnow;
 %pause;
 
 %% Error vs time
-nonSparse_list = {["a1_"], ["ImageReconS1Error"]; ["a8_"], ["ImageReconS2Error"]; ["a4_"], ["S1ReconS2Error"]}; %%; ["a9_"], ["GroundTruthReconS2Error"]; ["a10_"], ["GroundTruthS2ReconS1Error"]};
+nonSparse_list = {["a1_"], ["ImageReconS1Error"]; ["a8_"], ["ImageReconS2Error"]; ["a4_"], ["S1ReconS2Error"]; ["a12_"], ["GroundTruthError"]};%; ["a10_"], ["GroundTruthS2ReconS1Error"]};
 num_nonSparse_list = size(nonSparse_list,1);
 nonSparse_skip = repmat(1, num_nonSparse_list, 1);
 nonSparse_skip(1) = 1;
-nonSparse_norm_list = {["a0_"], ["Image"]; ["a2_"], ["S1"]; ["a7_"], ["S2"]; ["a2_"], ["S1"]};
+nonSparse_norm_list = {["a0_"], ["Image"]; ["a0_"], ["Image"]; ["a2_"], ["S1"]; ["a10_"], ["GroundTruth"]};
 nonSparse_norm_strength = ones(num_nonSparse_list,1);
 nonSparse_norm_strength(1) = 1/18;
-Sparse_std_ndx = [0 0 1 3 3]; %% 
+nonSparse_norm_strength(2) = 1/18;
+Sparse_std_ndx = [0 0 1 3]; %% 
 fraction_nonSparse_frames_read = 1;
 min_nonSparse_skip = 1;
 fraction_nonSparse_progress = 10;
@@ -62,15 +63,10 @@ drawnow;
 
 
 
-if plot_flag
-  %true_fig = figure;
-  pred_fig = figure;
-  gt_fig = figure;
-endif
 %%imageRecon_fig = figure;
 %true_classID_file = fullfile("~/workspace/PASCAL_VOC/VOC2007/VOC2007_padded0_landscape_classID.pvp")
-pred_classID_file = fullfile("~/workspace/PASCAL_VOC/PASCAL_S1_96_S2_384_MLP/VOC2007_landscape/a8_GroundTruthReconS2.pvp")
-gt_classID_file = fullfile("~/workspace/PASCAL_VOC/PASCAL_S1_96_S2_384_MLP/VOC2007_landscape/a5_GroundTruth.pvp")
+pred_classID_file = fullfile("~/workspace/PASCAL_VOC/PASCAL_S1_96_S2_384_MLP/VOC2007_landscape2/a11_GroundTruthReconS2.pvp")
+gt_classID_file = fullfile("~/workspace/PASCAL_VOC/PASCAL_S1_96_S2_384_MLP/VOC2007_landscape2/a10_GroundTruth.pvp")
 %[true_data,true_hdr] = readpvpfile(true_classID_file); 
 [pred_data,pred_hdr] = readpvpfile(pred_classID_file); 
 [gt_data,gt_hdr] = readpvpfile(gt_classID_file); 
@@ -86,7 +82,7 @@ gt_num_frames = length(gt_data);
 num_colors = 2^24;
 accuracy_vs_time = zeros(gt_num_frames,1);
 confusion_matrix = zeros(gt_hdr.nf);
-for i_frame = min(pred_num_frames, gt_num_frames): -1: min(pred_num_frames, gt_num_frames)-4
+for i_frame = min(pred_num_frames, gt_num_frames): -1: min(pred_num_frames, gt_num_frames)-4+1
     display(["i_frame = ", num2str(i_frame)]);
     %%true_num_active = length(true_data{i_frame}.values);
     %%true_active_ndx = true_data{i_frame}.values+1;
@@ -116,6 +112,7 @@ for i_frame = min(pred_num_frames, gt_num_frames): -1: min(pred_num_frames, gt_n
 
     %% ground truth layer is sparse
     %%gt_classID_cube = gt_data{i_frame}.values;
+    gt_time = gt_data{i_frame}.time;
     gt_num_active = length(gt_data{i_frame}.values);
     gt_active_ndx = gt_data{i_frame}.values+1;
     gt_active_sparse = sparse(gt_active_ndx,1,1,gt_num_neurons,1,gt_num_active);
@@ -142,21 +139,22 @@ for i_frame = min(pred_num_frames, gt_num_frames): -1: min(pred_num_frames, gt_n
     endfor
     gt_classID_heatmap = mod(gt_classID_heatmap, 255);
     if plot_flag
-      figure(gt_fig);
+      gt_fig = figure("name", ["Ground Truth: ", num2str(gt_time)]);
       image(uint8(gt_classID_heatmap)); axis off; axis image, box off;
       drawnow
     endif
 
     %% recon layer is not sparse
+    pred_time = pred_data{i_frame}.time;
     pred_classID_cube = pred_data{i_frame}.values;
     pred_classID_cube = permute(pred_classID_cube, [2,1,3]);
     [pred_classID_val, pred_classID_ndx] = max(pred_classID_cube, [], 3);
     %%min_pred_classID = min(pred_classID_val(:))
     max_pred_classID = max(pred_classID_val(:))
-    %%mean_pred_classID = mean(pred_classID_val(:));
-    %%std_pred_classID = std(pred_classID_val(:));
-    pred_classID_cube = double(pred_classID_cube >= (max_pred_classID*(.999)));
-    %%pred_classID_cube = double(pred_classID_cube >= (mean_pred_classID+std_pred_classID));
+    mean_pred_classID = mean(pred_classID_val(:))
+    std_pred_classID = std(pred_classID_val(:))
+    %%pred_classID_cube = double(pred_classID_cube >= (max_pred_classID*(.999)));
+    pred_classID_cube = double(pred_classID_cube >= (mean_pred_classID+std_pred_classID));
     pred_classID_heatmap = zeros(pred_hdr.ny, pred_hdr.nx, 3);
     for i_pred_classID = 1 : pred_hdr.nf
 	if ~any(pred_classID_cube(:,:,i_pred_classID))
@@ -176,7 +174,7 @@ for i_frame = min(pred_num_frames, gt_num_frames): -1: min(pred_num_frames, gt_n
     %%max_pred_heatmap = max(pred_classID_heatmap(:));
     %pred_classID_heatmap = 255 * (pred_classID_heatmap - min_pred_heatmap) / ((max_pred_heatmap - min_pred_heatmap) + (max_pred_heatmap == min_pred_heatmap));
     if plot_flag
-      figure(pred_fig);
+      pred_fig = figure("name", ["Predict: ", num2str(pred_time)]);
       image(uint8(pred_classID_heatmap)); axis off; axis image, box off;
       drawnow
     endif
@@ -193,7 +191,7 @@ for i_frame = min(pred_num_frames, gt_num_frames): -1: min(pred_num_frames, gt_n
 
    %% keyboard;
     if plot_flag
-      pause;
+      %pause;
     endif
     
 
