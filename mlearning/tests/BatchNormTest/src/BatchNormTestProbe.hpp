@@ -5,12 +5,12 @@
  *      Author: gkenyon
  */
 
-#ifndef RESCALELAYERTESTPROBE_HPP_
-#define RESCALELAYERTESTPROBE_HPP_
+#ifndef BATCHNORMTESTPROBE_HPP_
+#define BATCHNORMTESTPROBE_HPP_
 
 #include <io/StatsProbe.hpp>
 
-namespace PVMLearning {
+namespace PV{
 
 class BatchNormTestProbe: public PV::StatsProbe {
 public:
@@ -30,4 +30,4 @@ private:
 PV::BaseObject * createBatchNormTestProbe(char const * name, PV::HyPerCol * hc);
 
 }  // end namespace PV
-#endif /* RESCALELAYERTESTPROBE_HPP_ */
+#endif 

@@ -7,7 +7,7 @@
 #define MLPOUTPUTLAYER_HPP_ 
 #include "MLPSigmoidLayer.hpp"
 
-namespace PVMLearning{
+namespace PV{
 
 class MLPOutputLayer : public MLPSigmoidLayer{
 public:
@@ -54,5 +54,5 @@ private:
 
 PV::BaseObject * createMLPOutputLayer(char const * name, PV::HyPerCol * hc);
 
-}  // end namespace PVMLearning
+}  // end namespace PV
 #endif 

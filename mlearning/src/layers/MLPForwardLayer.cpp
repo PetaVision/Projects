@@ -34,7 +34,7 @@
 //}
 //#endif
 
-namespace PVMLearning {
+namespace PV {
 
 MLPForwardLayer::MLPForwardLayer()
 {
@@ -153,7 +153,7 @@ PV::BaseObject * createMLPForwardLayer(char const * name, PV::HyPerCol * hc) {
    return hc ? new MLPForwardLayer(name, hc) : NULL;
 }
 
-} /* namespace PVMLearning */
+} /* namespace PV */
 
 
 //#ifdef __cplusplus

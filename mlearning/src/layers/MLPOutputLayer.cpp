@@ -6,7 +6,7 @@
 #include "MLPOutputLayer.hpp"
 #include <iostream>
 
-namespace PVMLearning {
+namespace PV {
 MLPOutputLayer::MLPOutputLayer(){
    initialize_base();
 }
@@ -393,4 +393,4 @@ PV::BaseObject * createMLPOutputLayer(char const * name, PV::HyPerCol * hc) {
    return hc ? new MLPOutputLayer(name, hc) : NULL;
 }
 
-}  // end namespace PVMLearning
+}  // end namespace PV

@@ -34,7 +34,7 @@
 //}
 //#endif
 
-namespace PVMLearning {
+namespace PV {
 
 MLPErrorLayer::MLPErrorLayer()
 {
@@ -284,7 +284,7 @@ PV::BaseObject * createMLPErrorLayer(char const * name, PV::HyPerCol * hc) {
    return hc ? new MLPErrorLayer(name, hc) : NULL;
 }
 
-} /* namespace PVMLearning */
+} /* namespace PV */
 
 
 //#ifdef __cplusplus

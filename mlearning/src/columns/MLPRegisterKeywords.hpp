@@ -3,10 +3,10 @@
 
 #include <columns/PV_Init.hpp>
 
-namespace PVMLearning {
+namespace PV {
 
 int MLPRegisterKeywords(PV::PV_Init * pv_initObj);
 
-} // end of namespace PVMLearning
+} // end of namespace PV
 
 #endif // MLPREGISTERKEYWORDS_HPP_

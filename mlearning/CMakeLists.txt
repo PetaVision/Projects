@@ -21,7 +21,13 @@ pv_add_library(${TARGET} SRC
   src/layers/MLPSigmoidLayer.hpp
   src/layers/BatchNorm.cpp
   src/layers/BatchNorm.hpp
+  src/layers/BackwardsBatchNorm.cpp
+  src/layers/BackwardsBatchNorm.hpp
+  src/layers/GradientCheckProbe.cpp
+  src/layers/GradientCheckProbe.hpp
 )
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PV_CPP_11X_FLAGS}")
 
 # Dependencies
 add_dependencies(${TARGET} pv)

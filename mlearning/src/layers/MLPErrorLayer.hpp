@@ -11,7 +11,7 @@
 #include <layers/ANNLayer.hpp>
 #include "MLPForwardLayer.hpp"
 
-namespace PVMLearning {
+namespace PV {
 
 class MLPErrorLayer: public PV::ANNLayer {
 public:
@@ -71,5 +71,5 @@ private:
 
 PV::BaseObject * createMLPErrorLayer(char const * name, PV::HyPerCol * hc);
 
-} /* namespace PVMLearning */
+} /* namespace PV */
 #endif /* ANNERRORLAYER_HPP_ */

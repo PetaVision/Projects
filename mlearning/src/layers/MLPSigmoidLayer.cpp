@@ -9,7 +9,7 @@
 #include <include/default_params.h>
 
 // MLPSigmoidLayer can be used to implement Sigmoid junctions
-namespace PVMLearning {
+namespace PV {
 MLPSigmoidLayer::MLPSigmoidLayer() {
    initialize_base();
 }
@@ -142,4 +142,4 @@ PV::BaseObject * createMLPSigmoidLayer(char const * name, PV::HyPerCol * hc) {
 }
 
 
-} // end namespace PVMLearning
+} // end namespace PV

@@ -10,7 +10,7 @@
 
 #include <layers/ANNLayer.hpp>
 
-namespace PVMLearning {
+namespace PV {
 
 class MLPForwardLayer: public PV::ANNLayer {
 public:
@@ -36,5 +36,5 @@ private:
 
 PV::BaseObject * createMLPForwardLayer(char const * name, PV::HyPerCol * hc);
 
-} /* namespace PVMLearning */
+} /* namespace PV */
 #endif /* ANNERRORLAYER_HPP_ */
