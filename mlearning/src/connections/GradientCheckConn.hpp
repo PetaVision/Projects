@@ -1,8 +1,6 @@
 /*
  * GradientCheckConn.hpp
  *
- *  Created on: Nov 17, 2010
- *      Author: pschultz
  */
 
 #ifndef GRADIENTCHECKCONN_HPP_
@@ -10,7 +8,7 @@
 
 #include <connections/HyPerConn.hpp>
 
-namespace PVMLearning {
+namespace PV {
 
 class GradientCheckConn: public PV::HyPerConn{
 public:
@@ -49,7 +47,7 @@ private:
 
 PV::BaseObject * createGradientCheckConn(char const * name, PV::HyPerCol * hc);
 
-}  // end of block for namespace PVMLearning
+}  // end of block for namespace PV
 
 
 #endif /* GRADIENTCHECKCONN_HPP_ */

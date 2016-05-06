@@ -9,36 +9,44 @@
 
 #include <layers/CloneVLayer.hpp>
 
-namespace PVMLearning {
+namespace PV {
 
 // CloneLayer can be used to implement Sigmoid junctions between spiking neurons
 class BatchNorm: public PV::CloneVLayer {
-public:
-   BatchNorm(const char * name, PV::HyPerCol * hc);
-   virtual ~BatchNorm();
-   virtual int communicateInitInfo();
-   virtual int allocateV();
-   virtual int updateState(double timef, double dt);
-   virtual int setActivity();
-   virtual int allocateDataStructures();
+    public:
+        BatchNorm(const char * name, PV::HyPerCol * hc);
+        virtual ~BatchNorm();
+        virtual int communicateInitInfo();
+        virtual int allocateV();
+        virtual int updateState(double timef, double dt);
+        virtual int setActivity();
+        virtual int allocateDataStructures();
 
-protected:
-   BatchNorm();
-   int initialize(const char * name, PV::HyPerCol * hc);
-   int ioParamsFillGroup(enum ParamsIOFlag ioFlag);
-private:
-   int initialize_base();
+        //Getter functions for batch buffers
+        const float* getBatchMean(){return batchMean;}
+        const float* getBatchVar(){return batchVar;}
+        //BackwardsBatchNorm will update these buffers
+        float* getBatchMeanShift(){return batchMeanShift;}
+        float* getBatchVarShift(){return batchVarShift;}
+        float getEpsilon(){return epsilon;}
 
-protected:
-   float* batchMean;
-   float* batchVar;
-   float* batchMeanShift;
-   float* batchVarShift;
-   float epsilon;
+    protected:
+        BatchNorm();
+        int initialize(const char * name, PV::HyPerCol * hc);
+        int ioParamsFillGroup(enum ParamsIOFlag ioFlag);
+    private:
+        int initialize_base();
+
+    protected:
+        float* batchMean;
+        float* batchVar;
+        float* batchMeanShift;
+        float* batchVarShift;
+        float epsilon;
 };
 
 PV::BaseObject * createBatchNorm(char const * name, PV::HyPerCol * hc);
 
-} /* namespace PVMLearning */
+} /* namespace PV */
 
 #endif /* CLONELAYER_HPP_ */

@@ -11,7 +11,7 @@
 
 #include "GradientCheckConn.hpp"
 
-namespace PVMLearning{
+namespace PV{
 
 GradientCheckConn::GradientCheckConn() {
     initialize_base();
@@ -295,4 +295,4 @@ PV::BaseObject * createGradientCheckConn(char const * name, PV::HyPerCol * hc) {
 }
 
 
-}  // end of namespace PVMLearning block
+}  // end of namespace PV block

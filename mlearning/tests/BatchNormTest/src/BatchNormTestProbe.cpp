@@ -12,7 +12,7 @@
 #include <string.h>
 #include <assert.h>
 
-namespace PVMLearning {
+namespace PV{
 
 BatchNormTestProbe::BatchNormTestProbe(const char * probeName, PV::HyPerCol * hc)
 : StatsProbe()

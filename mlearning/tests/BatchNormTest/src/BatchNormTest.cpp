@@ -12,8 +12,8 @@
 int main(int argc, char * argv[]) {
    PV_Init initObj(&argc, &argv, false/*allowUnrecognizedArguments*/);
    initObj.initialize();
-   PVMLearning::MLPRegisterKeywords(&initObj);
-   initObj.registerKeyword("BatchNormTestProbe", PVMLearning::createBatchNormTestProbe);
+   PV::MLPRegisterKeywords(&initObj);
+   initObj.registerKeyword("BatchNormTestProbe", PV::createBatchNormTestProbe);
    int rank = initObj.getWorldRank();
    int status = buildandrun(&initObj, NULL, NULL);
 

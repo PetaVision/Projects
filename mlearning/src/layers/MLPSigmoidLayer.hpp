@@ -10,7 +10,7 @@
 #include <layers/CloneVLayer.hpp>
 #include "MLPForwardLayer.hpp"
 
-namespace PVMLearning {
+namespace PV {
 
 // MLPSigmoidLayer can be used to implement Sigmoid junctions between spiking neurons
 class MLPSigmoidLayer: public PV::CloneVLayer {
@@ -52,6 +52,6 @@ private:
 
 PV::BaseObject * createMLPSigmoidLayer(char const * name, PV::HyPerCol * hc);
 
-}  // end namespace PVMLearning
+}  // end namespace PV
 
 #endif /* CLONELAYER_HPP_ */

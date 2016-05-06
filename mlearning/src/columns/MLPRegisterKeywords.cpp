@@ -4,8 +4,10 @@
 #include "../layers/MLPSigmoidLayer.hpp"
 #include "../layers/MLPOutputLayer.hpp"
 #include "../layers/BatchNorm.hpp"
+#include "../layers/BackwardsBatchNorm.hpp"
+#include "../layers/GradientCheckProbe.hpp"
 
-namespace PVMLearning {
+namespace PV {
 
 int MLPRegisterKeywords(PV::PV_Init * pv_initObj) {
     int status = PV_SUCCESS;
@@ -16,7 +18,9 @@ int MLPRegisterKeywords(PV::PV_Init * pv_initObj) {
     status |= pv_initObj->registerKeyword("MLPSigmoidLayer", createMLPSigmoidLayer);
     status |= pv_initObj->registerKeyword("MLPOutputLayer", createMLPOutputLayer);
     status |= pv_initObj->registerKeyword("BatchNorm", createBatchNorm);
+    status |= pv_initObj->registerKeyword("BackwardsBatchNorm", createBatchNorm);
+    status |= pv_initObj->registerKeyword("GradientCheckProbe", createGradientCheckProbe);
     return status;
 }
 
-} // end of namespace PVMLearning
+} // end of namespace PV
